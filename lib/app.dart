@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_player/controller_binders.dart';
 import 'package:music_player/presentation/ui/screen/splash_screen.dart';
 
 class MusicPlayerApp extends StatelessWidget {
@@ -10,8 +11,9 @@ class MusicPlayerApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Music Player',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      theme: ThemeData.dark(),
       home: const SplashScreen(),
+      initialBinding: ControllerBinder(),
     );
   }
 }
