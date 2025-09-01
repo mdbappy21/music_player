@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/presentation/controllers/player_controller.dart';
 import 'package:music_player/presentation/ui/sheets/mini_player_actions_sheet.dart';
-import 'package:music_player/presentation/ui/widgets/equalizer_widget.dart';
 
 class MiniPlayer extends StatelessWidget {
   const MiniPlayer({super.key});
@@ -12,12 +11,24 @@ class MiniPlayer extends StatelessWidget {
     final PlayerController controller = Get.find<PlayerController>();
 
     return Obx(() {
-      if (controller.currentSong.value == null) {
-        return const SizedBox.shrink();
-      }
+      if (controller.currentSong.value == null) return const SizedBox.shrink();
 
       final song = controller.currentSong.value!;
       final isPlaying = controller.isPlaying.value;
+      final playMode = controller.playMode.value;
+
+      IconData getPlayModeIcon() {
+        switch (playMode) {
+          case PlayMode.shuffle:
+            return Icons.shuffle;
+          case PlayMode.loopOne:
+            return Icons.repeat_one;
+          case PlayMode.loopAll:
+            return Icons.repeat;
+          case PlayMode.stop:
+            return Icons.stop_circle;
+        }
+      }
 
       return Container(
         padding: const EdgeInsets.all(8),
@@ -39,33 +50,24 @@ class MiniPlayer extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        song.title,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        song.artist ?? "Unknown Artist",
-                        style: const TextStyle(color: Colors.white70, fontSize: 12),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      Text(song.title,
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      Text(song.artist ?? "Unknown Artist",
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
                     ],
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
-                  onPressed:  (){
-                    showMiniPlayerActionsSheet(context, song);
-                  }
+                  onPressed: () => showMiniPlayerActionsSheet(context, song),
                 ),
               ],
             ),
-
             StreamBuilder<Duration>(
               stream: controller.audioPlayer.positionStream,
               builder: (context, snapshot) {
@@ -86,9 +88,9 @@ class MiniPlayer extends StatelessWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(_formatDuration(position),
+                        Text(controller.formatDuration(position),
                             style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                        Text(_formatDuration(total),
+                        Text(controller.formatDuration(total),
                             style: const TextStyle(color: Colors.white70, fontSize: 12)),
                       ],
                     ),
@@ -96,21 +98,22 @@ class MiniPlayer extends StatelessWidget {
                 );
               },
             ),
-
-            // const EqualizerWidget(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                IconButton(
+                  icon: Icon(getPlayModeIcon(), color: Colors.white,size: 32,),
+                  onPressed: controller.togglePlayMode,
+                ),
                 IconButton(
                   icon: const Icon(Icons.skip_previous, color: Colors.white, size: 32),
                   onPressed: controller.playPrevious,
                 ),
                 IconButton(
                   icon: Icon(
-                    isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                    color: Colors.orange,
-                    size: 48,
-                  ),
+                      isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
+                      color: Colors.orange,
+                      size: 48),
                   onPressed: () {
                     if (isPlaying) {
                       controller.pauseSong();
@@ -123,18 +126,12 @@ class MiniPlayer extends StatelessWidget {
                   icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
                   onPressed: controller.playNext,
                 ),
+                const SizedBox(width: 8),
               ],
             ),
           ],
         ),
       );
     });
-  }
-
-  String _formatDuration(Duration d) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    final minutes = twoDigits(d.inMinutes.remainder(60));
-    final seconds = twoDigits(d.inSeconds.remainder(60));
-    return "$minutes:$seconds";
   }
 }
