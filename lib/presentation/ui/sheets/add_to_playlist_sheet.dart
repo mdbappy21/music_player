@@ -1,16 +1,15 @@
-// lib/presentation/ui/sheets/add_to_playlist_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/presentation/controllers/playlist_controller.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-void showAddToPlaylistSheet(BuildContext context, SongModel song) {
+void showAddToPlaylistSheet(SongModel song) {
   final playlistController = Get.find<PlaylistController>();
   final TextEditingController nameController = TextEditingController();
 
   Get.bottomSheet(
     Container(
-      constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
+      constraints: BoxConstraints(maxHeight: 300),
       padding: const EdgeInsets.all(12),
       decoration: const BoxDecoration(
         color: Colors.black87,
@@ -24,7 +23,6 @@ void showAddToPlaylistSheet(BuildContext context, SongModel song) {
           Text(song.title, maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 12),
 
-          // create new playlist
           Row(
             children: [
               Expanded(
@@ -45,7 +43,6 @@ void showAddToPlaylistSheet(BuildContext context, SongModel song) {
                     return;
                   }
                   playlistController.createPlaylist(name);
-                  // find newly created and add
                   final newId = playlistController.playlists.last.id;
                   playlistController.addToPlaylist(newId, song.id);
                   Get.back();

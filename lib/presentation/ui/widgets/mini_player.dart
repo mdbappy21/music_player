@@ -12,7 +12,7 @@ class MiniPlayer extends StatelessWidget {
 
     return Obx(() {
       if (controller.currentSong.value == null) {
-        return const SizedBox.shrink(); // no song playing
+        return const SizedBox.shrink();
       }
 
       final song = controller.currentSong.value!;
@@ -30,7 +30,6 @@ class MiniPlayer extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 🔹 Row 1: Song title + artist
             Row(
               children: [
                 const Icon(Icons.music_note, color: Colors.white70),
@@ -59,13 +58,13 @@ class MiniPlayer extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.more_vert, color: Colors.white),
-                  onPressed:  (){showMiniPlayerActionsSheet(context, song);}
-                  // onPressed: () => controller.showSongOptions(context),
+                  onPressed:  (){
+                    showMiniPlayerActionsSheet(context, song);
+                  }
                 ),
               ],
             ),
 
-            // 🔹 Row 2: Duration slider
             StreamBuilder<Duration>(
               stream: controller.audioPlayer.positionStream,
               builder: (context, snapshot) {
@@ -76,9 +75,7 @@ class MiniPlayer extends StatelessWidget {
                   children: [
                     Slider(
                       value: position.inSeconds.toDouble(),
-                      max: total.inSeconds.toDouble() > 0
-                          ? total.inSeconds.toDouble()
-                          : 1.0,
+                      max: total.inSeconds.toDouble() > 0 ? total.inSeconds.toDouble() : 1.0,
                       onChanged: (value) {
                         controller.audioPlayer.seek(Duration(seconds: value.toInt()));
                       },
@@ -99,7 +96,6 @@ class MiniPlayer extends StatelessWidget {
               },
             ),
 
-            // 🔹 Row 3: Controls
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

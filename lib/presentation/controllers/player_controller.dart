@@ -4,7 +4,6 @@ import 'package:on_audio_query/on_audio_query.dart';
 
 class PlayerController extends GetxController {
   final audioPlayer = AudioPlayer();
-  final AudioPlayer _player = AudioPlayer();
   final Rx<Duration> position = Duration.zero.obs;
   final Rx<Duration> duration = Duration.zero.obs;
   var currentSong = Rxn<SongModel>();
@@ -22,6 +21,13 @@ class PlayerController extends GetxController {
     super.onInit();
     audioPlayer.playerStateStream.listen((state) {
       isPlaying.value = state.playing;
+    });
+
+    audioPlayer.positionStream.listen((pos) {
+      position.value = pos;
+    });
+    audioPlayer.durationStream.listen((dur) {
+      duration.value = dur ?? Duration.zero;
     });
   }
 
@@ -58,10 +64,7 @@ class PlayerController extends GetxController {
     playSong(list[prevIndex], list);
   }
 
-  Future<void> pause() async {
-    await _player.pause();
-    isPlaying.value = false;
-  }
+
 
   Future<void> playSingle(SongModel song, List<SongModel>songList) async {
     await playSong(song, songList);
@@ -74,10 +77,10 @@ class PlayerController extends GetxController {
   }
 
   bool isPlayingSong(SongModel song) {
-    return currentSong.value?.id == song.id && isPlaying.value;
+    return currentSong.value?.id == song.id;
   }
 
   Future<void> seek(Duration position) async {
-    await _player.seek(position);
+    await audioPlayer.seek(position);
   }
 }

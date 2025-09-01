@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/data/models/playlist.dart';
 import 'package:music_player/presentation/controllers/player_controller.dart';
+import 'package:music_player/presentation/ui/widgets/mini_player.dart';
 import 'music_details_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../widgets/mini_player.dart';
+
 
 class PlaylistDetailsScreen extends StatefulWidget {
   final Playlist playlist;
@@ -35,9 +36,7 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
     );
 
     setState(() {
-      playlistSongs = allSongs
-          .where((song) => widget.playlist.trackIds.contains(song.id))
-          .toList();
+      playlistSongs = allSongs.where((song) => widget.playlist.trackIds.contains(song.id)).toList();
     });
   }
 
@@ -48,13 +47,10 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
         title: Text(widget.playlist.name),
         centerTitle: true,
       ),
-      body: playlistSongs.isEmpty
-          ? const Center(child: Text("No songs in this playlist"))
-          : ListView.builder(
+      body: playlistSongs.isEmpty ? const Center(child: Text("No songs in this playlist")) : ListView.builder(
         itemCount: playlistSongs.length,
         itemBuilder: (context, index) {
           final song = playlistSongs[index];
-
 
           return GestureDetector(
             onTap: (){
@@ -117,7 +113,7 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                         return IconButton(
                           onPressed: () {
                             if (isCurrent) {
-                              playerController.pause();
+                              playerController.pauseSong();
                             } else {
                               // Pass both song and the playlist song list
                               playerController.playSingle(song, playlistSongs);

@@ -1,9 +1,8 @@
-// lib/presentation/ui/sheets/sleep_timer_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/settings_controller.dart';
+import 'package:music_player/presentation/controllers/settings_controller.dart';
 
-void showSleepTimerSheet(BuildContext context) {
+void showSleepTimerSheet() {
   final settingsController = Get.find<SettingsController>();
   final RxInt minutes = RxInt((settingsController.sleepTimerSeconds.value / 60).round());
 

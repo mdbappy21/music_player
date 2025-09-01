@@ -43,7 +43,7 @@ class AllMusicScreen extends StatelessWidget {
                         icon: Icon(isCurrent ? Icons.pause : Icons.play_arrow),
                         onPressed: () {
                           if (isCurrent) {
-                            playerController.pause();
+                            playerController.pauseSong();
                           } else {
                             playerController.playSingle(song,songs);
                           }

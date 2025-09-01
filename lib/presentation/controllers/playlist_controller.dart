@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
-import '../../data/models/playlist.dart';
+import 'package:music_player/data/models/playlist.dart';
 
 class PlaylistController extends GetxController {
   final playlists = <Playlist>[].obs;
@@ -11,10 +11,8 @@ class PlaylistController extends GetxController {
     super.onInit();
     _box = Hive.box<Playlist>('playlists');
 
-    // load saved playlists
     playlists.assignAll(_box.values.toList());
 
-    // ensure default "Favorite" playlist exists
     if (playlists.where((p) => p.id == 'favorite').isEmpty) {
       final favorite = Playlist(id: 'favorite', name: 'Favorite', trackIds: []);
       playlists.insert(0, favorite);

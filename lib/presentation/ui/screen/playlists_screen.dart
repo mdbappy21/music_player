@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../controllers/playlist_controller.dart';
+import 'package:music_player/presentation/controllers/playlist_controller.dart';
 import 'playlist_details_screen.dart';
 
 class PlaylistsScreen extends StatelessWidget {

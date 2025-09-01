@@ -1,10 +1,10 @@
-// lib/presentation/ui/sheets/song_details_sheet.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_player/presentation/controllers/player_controller.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import '../../controllers/player_controller.dart';
 
-void showSongDetailsSheet(BuildContext context, SongModel song) {
+
+void showSongDetailsSheet(SongModel song) {
   final playerController = Get.find<PlayerController>();
 
   Get.bottomSheet(
@@ -33,7 +33,7 @@ void showSongDetailsSheet(BuildContext context, SongModel song) {
           ),
           ListTile(
             title: const Text('URI / Path'),
-            subtitle: Text(song.uri ?? song.data ?? 'N/A', maxLines: 2, overflow: TextOverflow.ellipsis),
+            subtitle: Text(song.uri ?? song.data, maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
           const SizedBox(height: 8),
         ],
