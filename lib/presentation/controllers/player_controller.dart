@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:audio_service/audio_service.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -53,7 +54,16 @@ class PlayerController extends GetxController {
       currentPlaylist = [];
     }
 
-    await audioPlayer.setAudioSource(AudioSource.uri(Uri.parse(song.uri!)));
+    await audioPlayer.setAudioSource(AudioSource.uri(
+      Uri.parse(song.uri!),
+      tag: MediaItem(
+        id: song.id.toString(),
+        album: song.album ?? '',
+        title: song.title,
+        artist: song.artist ?? 'Unknown Artist',
+      ),
+    ));
+
     await audioPlayer.play();
   }
 

@@ -1,59 +1,63 @@
 package com.example.music_player;
 
-import android.media.audiofx.Equalizer;
 import android.media.audiofx.BassBoost;
-import android.os.Bundle;
+import android.media.audiofx.Equalizer;
 
 import androidx.annotation.NonNull;
 
-import io.flutter.embedding.android.FlutterActivity;
-import io.flutter.plugin.common.MethodCall;
+import com.ryanheise.audioservice.AudioServiceActivity;
+
+import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
 
-public class MainActivity extends FlutterActivity {
+public class MainActivity extends AudioServiceActivity {
     private static final String CHANNEL = "music_player_equalizer";
 
     private Equalizer equalizer;
     private BassBoost bassBoost;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+        super.configureFlutterEngine(flutterEngine);
 
-        // Attach MethodChannel
-        new MethodChannel(getFlutterEngine().getDartExecutor().getBinaryMessenger(), CHANNEL)
-                .setMethodCallHandler(
-                        (call, result) -> {
-                            switch (call.method) {
-                                case "setEnabled":
-                                    boolean enabled = call.argument("enabled");
-                                    if (equalizer != null) equalizer.setEnabled(enabled);
-                                    if (bassBoost != null) bassBoost.setEnabled(enabled);
-                                    result.success(null);
-                                    break;
-
-                                case "setBandLevel":
-                                    int band = call.argument("band");
-                                    int level = call.argument("level");
-                                    if (equalizer != null) equalizer.setBandLevel((short) band, (short) level);
-                                    result.success(null);
-                                    break;
-
-                                case "setBassBoost":
-                                    int value = call.argument("value");
-                                    if (bassBoost != null) bassBoost.setStrength((short) value);
-                                    result.success(null);
-                                    break;
-
-                                default:
-                                    result.notImplemented();
-                                    break;
+        // MethodChannel for equalizer control
+        new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
+                .setMethodCallHandler((call, result) -> {
+                    switch (call.method) {
+                        case "setEnabled": {
+                            Boolean enabled = call.argument("enabled");
+                            if (enabled != null) {
+                                if (equalizer != null) equalizer.setEnabled(enabled);
+                                if (bassBoost != null) bassBoost.setEnabled(enabled);
                             }
+                            result.success(null);
+                            break;
                         }
-                );
+                        case "setBandLevel": {
+                            Integer band = call.argument("band");
+                            Integer level = call.argument("level");
+                            if (band != null && level != null && equalizer != null) {
+                                equalizer.setBandLevel((short)(int)band, (short)(int)level);
+                            }
+                            result.success(null);
+                            break;
+                        }
+                        case "setBassBoost": {
+                            Integer value = call.argument("value");
+                            if (value != null && bassBoost != null) {
+                                bassBoost.setStrength((short)(int)value);
+                            }
+                            result.success(null);
+                            break;
+                        }
+                        default:
+                            result.notImplemented();
+                            break;
+                    }
+                });
     }
 
-    // Call this whenever audio session is ready
+    // Initialize Equalizer after obtaining the audio session id
     public void initEqualizer(int audioSessionId) {
         if (equalizer != null) equalizer.release();
         equalizer = new Equalizer(0, audioSessionId);
