@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_player/presentation/ui/sheets/equalizer_sheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'sleep_timer_sheet.dart';
 import 'add_to_playlist_sheet.dart';
@@ -15,6 +16,16 @@ void showMiniPlayerActionsSheet(BuildContext context, SongModel song) {
       ),
       child: Wrap(
         children: [
+          ListTile(
+            leading: const Icon(Icons.equalizer),
+            title: const Text('Equalizer'),
+            onTap: () {
+              Get.back(); // close current sheet
+              Future.delayed(const Duration(milliseconds: 120), () {
+                showEqualizerSheet();
+              });
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.timer),
             title: const Text('Sleep timer'),

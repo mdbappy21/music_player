@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/presentation/controllers/player_controller.dart';
 import 'package:music_player/presentation/ui/sheets/mini_player_actions_sheet.dart';
+import 'package:music_player/presentation/ui/widgets/equalizer_widget.dart';
 
 class MiniPlayer extends StatelessWidget {
   const MiniPlayer({super.key});
@@ -74,7 +75,7 @@ class MiniPlayer extends StatelessWidget {
                 return Column(
                   children: [
                     Slider(
-                      value: position.inSeconds.toDouble(),
+                      value: position.inSeconds.toDouble().clamp(0, total.inSeconds.toDouble()),
                       max: total.inSeconds.toDouble() > 0 ? total.inSeconds.toDouble() : 1.0,
                       onChanged: (value) {
                         controller.audioPlayer.seek(Duration(seconds: value.toInt()));
@@ -96,6 +97,7 @@ class MiniPlayer extends StatelessWidget {
               },
             ),
 
+            // const EqualizerWidget(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
