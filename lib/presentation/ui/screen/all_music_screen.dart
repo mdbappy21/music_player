@@ -32,7 +32,7 @@ class AllMusicScreen extends StatelessWidget {
                   Get.to(() => MusicDetailsScreen(song: song,songs: songs,));
                 },
                 child: Card(
-                  color: Colors.orange.shade200.withOpacity(0.3),
+                  color: Colors.orange.shade200.withValues(alpha: 0.3),
                   child: ListTile(
                     leading: const Icon(Icons.music_note),
                     title: Text(song.title),
