@@ -1,20 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.music_player">
 
-    <!-- Storage/media (use READ_MEDIA_AUDIO on Android 13+, fall back on READ_EXTERNAL_STORAGE before that) -->
+    <!-- Storage/media + audio -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-
-    <!-- Foreground service + wake lock for background playback -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <!-- Required when targeting SDK 34+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
-
-    <!-- Post notifications (Android 13+) so the media notification can appear -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -22,8 +15,7 @@
         android:label="music_player"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- Your launcher Activity. NOTE: we keep .MainActivity,
-             but it EXTENDS AudioServiceActivity in Java. -->
+        <!-- Your launcher activity (keep .MainActivity) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -43,38 +35,27 @@
             </intent-filter>
         </activity>
 
-        <!-- AudioService service required by just_audio_background / audio_service -->
+        <!-- Required by audio_service / just_audio_background -->
         <service
             android:name="com.ryanheise.audioservice.AudioService"
             android:foregroundServiceType="mediaPlayback"
-            android:exported="true"
-            tools:ignore="Instantiatable">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.media.browse.MediaBrowserService" />
             </intent-filter>
         </service>
 
-        <!-- Media button receiver for headset / car controls -->
         <receiver
             android:name="com.ryanheise.audioservice.MediaButtonReceiver"
-            android:exported="true"
-            tools:ignore="Instantiatable">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MEDIA_BUTTON" />
             </intent-filter>
         </receiver>
 
-        <!-- Flutter embedding v2 marker -->
+        <!-- Flutter embedding v2 marker MUST be in <application> -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
-
-    <!-- Optional (kept from your original): package visibility for PROCESS_TEXT -->
-    <queries>
-        <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT" />
-            <data android:mimeType="text/plain" />
-        </intent>
-    </queries>
 </manifest>

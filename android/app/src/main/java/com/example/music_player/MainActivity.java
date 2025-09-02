@@ -1,16 +1,16 @@
 package com.example.music_player;
 
-import android.media.audiofx.BassBoost;
 import android.media.audiofx.Equalizer;
+import android.media.audiofx.BassBoost;
 
 import androidx.annotation.NonNull;
 
-import com.ryanheise.audioservice.AudioServiceActivity;
+import com.ryanheise.audioservice.AudioServiceActivity; // <-- important
 
 import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodChannel;
 
-public class MainActivity extends AudioServiceActivity {
+public class MainActivity extends AudioServiceActivity { // <-- important
     private static final String CHANNEL = "music_player_equalizer";
 
     private Equalizer equalizer;
@@ -20,10 +20,17 @@ public class MainActivity extends AudioServiceActivity {
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
 
-        // MethodChannel for equalizer control
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CHANNEL)
                 .setMethodCallHandler((call, result) -> {
                     switch (call.method) {
+                        case "initEqualizer": {
+                            Integer sessionId = call.argument("sessionId");
+                            if (sessionId != null) {
+                                initEqualizer(sessionId);
+                            }
+                            result.success(null);
+                            break;
+                        }
                         case "setEnabled": {
                             Boolean enabled = call.argument("enabled");
                             if (enabled != null) {
@@ -45,25 +52,30 @@ public class MainActivity extends AudioServiceActivity {
                         case "setBassBoost": {
                             Integer value = call.argument("value");
                             if (value != null && bassBoost != null) {
-                                bassBoost.setStrength((short)(int)value);
+                                bassBoost.setStrength((short)(int)value); // 0..1000
                             }
                             result.success(null);
                             break;
                         }
                         default:
                             result.notImplemented();
-                            break;
                     }
                 });
     }
 
-    // Initialize Equalizer after obtaining the audio session id
-    public void initEqualizer(int audioSessionId) {
-        if (equalizer != null) equalizer.release();
+    private void initEqualizer(int audioSessionId) {
+        if (equalizer != null) {
+            equalizer.release();
+            equalizer = null;
+        }
+        if (bassBoost != null) {
+            bassBoost.release();
+            bassBoost = null;
+        }
+
         equalizer = new Equalizer(0, audioSessionId);
         equalizer.setEnabled(true);
 
-        if (bassBoost != null) bassBoost.release();
         bassBoost = new BassBoost(0, audioSessionId);
         bassBoost.setEnabled(true);
     }
@@ -71,7 +83,13 @@ public class MainActivity extends AudioServiceActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (equalizer != null) equalizer.release();
-        if (bassBoost != null) bassBoost.release();
+        if (equalizer != null) {
+            equalizer.release();
+            equalizer = null;
+        }
+        if (bassBoost != null) {
+            bassBoost.release();
+            bassBoost = null;
+        }
     }
 }

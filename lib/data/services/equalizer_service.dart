@@ -4,6 +4,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 class EqualizerService {
   static const MethodChannel _channel = MethodChannel('music_player_equalizer');
 
+  /// Initialize Equalizer with the sessionId from audio player
+  static Future<void> init(int sessionId) async {
+    try {
+      await _channel.invokeMethod('initEqualizer', {'sessionId': sessionId});
+    } catch (e) {
+      print("Error initializing EQ: $e");
+    }
+  }
+
   /// Enable or disable equalizer
   static Future<void> setEnabled(bool enabled) async {
     try {
@@ -28,9 +37,11 @@ class EqualizerService {
       print("Error setting band $band: $e");
     }
     final box = await Hive.openBox('equalizer');
-    List<int> levels = List<int>.from(box.get('levels', defaultValue: [0, 0, 0, 0, 0]));
-    levels[band] = level;
-    box.put('levels', levels);
+    final levels = List<int>.from(box.get('levels', defaultValue: [0,0,0,0,0]));
+    if (band >= 0 && band < levels.length) {
+      levels[band] = level;
+      box.put('levels', levels);
+    }
   }
 
   /// Get saved band levels
