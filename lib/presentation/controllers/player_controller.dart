@@ -1,10 +1,13 @@
+import 'dart:io';
 import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_player/data/services/equalizer_service.dart';
+import 'package:path_provider/path_provider.dart';
 
 enum PlayMode { shuffle, loopOne, loopAll, stop }
 
@@ -46,6 +49,15 @@ class PlayerController extends GetxController {
         }
       }
     });
+    audioPlayer.currentIndexStream.listen((index) {
+      if (index != null) {
+        final list = isPlaylistMode ? currentPlaylist : allSongs;
+        if (index >= 0 && index < list.length) {
+          currentIndex.value = index;
+          currentSong.value = list[index]; // 🔥 keep title/artist in sync
+        }
+      }
+    });
   }
 
   /// Initialize Audio Session for Android/iOS
@@ -54,15 +66,35 @@ class PlayerController extends GetxController {
     await session.configure(const AudioSessionConfiguration.music());
   }
 
-  Uri? _artUriForSong(SongModel song) {
+  // Uri? _artUriForSong(SongModel song) {
+  //   try {
+  //     final albumId = (song as dynamic).albumId;
+  //     if (albumId == null || (albumId is int && albumId <= 0)) {
+  //       return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
+  //     }
+  //     return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
+  //   } catch (e) {
+  //     return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
+  //   }
+  // }
+  Future<Uri> _assetImageUri() async {
+    final byteData = await rootBundle.load('assets/images/musicLogo.png');
+    final file = File('${(await getTemporaryDirectory()).path}/musicLogo.png');
+    if (!await file.exists()) {
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+    }
+    return Uri.file(file.path);
+  }
+  Future<Uri?> _artUriForSong(SongModel song) async {
     try {
       final albumId = (song as dynamic).albumId;
       if (albumId == null || (albumId is int && albumId <= 0)) {
-        return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
+        return await _assetImageUri(); // fallback
       }
-      return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
+      // TODO: if you add real album art fetching later, return it here
+      return await _assetImageUri();
     } catch (e) {
-      return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
+      return await _assetImageUri();
     }
   }
 
@@ -77,20 +109,24 @@ class PlayerController extends GetxController {
       currentPlaylist = sourceList != allSongs ? sourceList : [];
 
       // Build MediaItems for all songs in the current list
-      final List<AudioSource> audioSources = sourceList.map((s) {
-        final artUri = _artUriForSong(s);
-        return AudioSource.uri(
-          Uri.parse(s.uri!),
-          tag: MediaItem(
-            id: s.id.toString(),
-            album: s.album ?? '',
-            title: s.title,
-            artist: s.artist ?? 'Unknown Artist',
-            artUri: artUri,
-            duration: Duration(milliseconds: s.duration ?? 0),
+      final List<AudioSource> audioSources = [];
+      for (var s in sourceList) {
+        final artUri = await _artUriForSong(s);
+        audioSources.add(
+          AudioSource.uri(
+            Uri.parse(s.uri!),
+            tag: MediaItem(
+              id: s.id.toString(),
+              album: s.album ?? '',
+              title: s.title,
+              artist: s.artist ?? 'Unknown Artist',
+              artUri: artUri,
+              duration: Duration(milliseconds: s.duration ?? 0),
+            ),
           ),
         );
-      }).toList();
+      }
+
 
       // Use ConcatenatingAudioSource for lock screen previous/next support
       await audioPlayer.setAudioSource(

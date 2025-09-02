@@ -38,12 +38,20 @@ class AllMusicScreen extends StatelessWidget {
                     title: Text(song.title),
                     subtitle: Text(song.artist ?? "Unknown"),
                     trailing: Obx(() {
-                      final isCurrent = playerController.isPlayingSong(song);
+                      final isCurrent = playerController.currentSong.value?.id == song.id;
+                      final isPlaying = playerController.isPlaying.value;
+
                       return IconButton(
-                        icon: Icon(isCurrent ? Icons.pause : Icons.play_arrow),
+                        icon: Icon(
+                          isCurrent ? (isPlaying ? Icons.pause : Icons.play_arrow) : Icons.play_arrow,
+                        ),
                         onPressed: () {
                           if (isCurrent) {
-                            playerController.pauseSong();
+                            if (isPlaying) {
+                              playerController.pauseSong();
+                            } else {
+                              playerController.resumeSong();
+                            }
                           } else {
                             playerController.playSingle(song,songs);
                           }
