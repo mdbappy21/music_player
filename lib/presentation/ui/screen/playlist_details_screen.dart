@@ -56,76 +56,79 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
             onTap: (){
               Get.to(()=>MusicDetailsScreen(song: song, songs: playlistSongs));
             },
-            child: Card(
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(12),
-                  bottomRight: Radius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Card(
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    bottomRight: Radius.circular(12),
+                  ),
                 ),
-              ),
-              color: const Color.fromARGB(115, 108, 34, 23),
-              child: SizedBox(
-                height: 96,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      width: 48,
-                      decoration: const BoxDecoration(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(12),
+                color: const Color.fromARGB(115, 108, 34, 23),
+                child: SizedBox(
+                  height: 96,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: double.infinity,
+                        decoration: const BoxDecoration(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(12),
+                          ),
+                          gradient: LinearGradient(
+                            colors: [Colors.orange, Colors.deepOrange, Colors.orange],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                         ),
-                        gradient: LinearGradient(
-                          colors: [Colors.orange, Colors.deepOrange, Colors.orange],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                        child: const Icon(Icons.music_note, color: Colors.black),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                song.title,
+                                softWrap: true,
+                                maxLines: 3,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                song.artist ?? "Unknown Artist",
+                                softWrap: true,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      child: const Icon(Icons.music_note, color: Colors.black),
-                    ),
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              song.title,
-                              softWrap: true,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              song.artist ?? "Unknown Artist",
-                              softWrap: true,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: 18.0),
+                        child: Obx(() {
+                          final isCurrent = playerController.isPlayingSong(song);
+                          return IconButton(
+                            onPressed: () {
+                              if (isCurrent) {
+                                playerController.pauseSong();
+                              } else {
+                                playerController.playSingle(song, playlistSongs);
+                                playerController.currentSong.value = song;
+                              }
+                            },
+                            icon: Icon(isCurrent ? Icons.pause : Icons.play_arrow),
+                          );
+                        }),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(right: 18.0),
-                      child: Obx(() {
-                        final isCurrent = playerController.isPlayingSong(song);
-                        return IconButton(
-                          onPressed: () {
-                            if (isCurrent) {
-                              playerController.pauseSong();
-                            } else {
-                              // Pass both song and the playlist song list
-                              playerController.playSingle(song, playlistSongs);
-                              playerController.currentSong.value = song;
-                            }
-                          },
-                          icon: Icon(isCurrent ? Icons.pause : Icons.play_arrow),
-                        );
-                      }),
-                    ),
 
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

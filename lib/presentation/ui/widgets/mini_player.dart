@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/presentation/controllers/player_controller.dart';
+import 'package:music_player/presentation/ui/sheets/equalizer_sheet.dart';
 import 'package:music_player/presentation/ui/sheets/mini_player_actions_sheet.dart';
 
 class MiniPlayer extends StatelessWidget {
@@ -32,13 +33,7 @@ class MiniPlayer extends StatelessWidget {
 
       return Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
-          ),
-        ),
+        color: Colors.black26,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -123,10 +118,14 @@ class MiniPlayer extends StatelessWidget {
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.skip_next, color: Colors.white, size: 32),
-                  onPressed: controller.playNext,
+                  icon:
+                  const Icon(Icons.skip_next, color: Colors.white, size: 32),
+                  onPressed: () => controller.playNext(),
                 ),
-                const SizedBox(width: 8),
+                IconButton(
+                  icon: const Icon(Icons.equalizer, color: Colors.white),
+                  onPressed: () => showEqualizerSheet(),
+                ),
               ],
             ),
           ],

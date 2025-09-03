@@ -34,9 +34,10 @@ void showSleepTimerSheet() {
               return Column(
                 children: [
                   Slider(
+                    activeColor: Colors.orange,
                     min: 0,
-                    max: 90,
-                    divisions: 90,
+                    max: 60,
+                    divisions: 60,
                     value: minutes.value.toDouble(),
                     onChanged: (v) {
                       minutes.value = v.toInt();
@@ -63,8 +64,8 @@ void showSleepTimerSheet() {
                 const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                    child: const Text('Remove Timer'),
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
+                    child: const Text('Remove Timer',style: TextStyle(color: Colors.black),),
                     onPressed: () {
                       settingsController.removeSleepTimer();
                       Get.back();

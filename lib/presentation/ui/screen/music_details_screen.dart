@@ -56,7 +56,10 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Now Playing")),
+      appBar: AppBar(
+        title: const Text("Music Player"),
+        centerTitle: true,
+      ),
       body: Obx(() {
         final currentSong = playerController.currentSong.value;
         final isPlaying = playerController.isPlaying.value;
@@ -71,71 +74,93 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
 
         return Column(
           children: [
-            const SizedBox(height: 20),
-            const Icon(Icons.album, size: 150),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
+            const Icon(Icons.album, size: 250),
+            const SizedBox(height: 24),
 
             Text(song.title,
-                style: const TextStyle(
-                    fontSize: 24, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center),
-
-            const SizedBox(height: 8),
-
-            Text(song.artist ?? "Unknown Artist",
-                style: const TextStyle(fontSize: 18, color: Colors.grey),
-                textAlign: TextAlign.center),
-
-            const Spacer(),
-
-            Slider(
-              value: sliderPos.clamp(0, sliderMax).toDouble(),
-              max: sliderMax > 0 ? sliderMax.toDouble() : 1,
-              onChanged: (value) {
-                if (isThisPlaying) {
-                  playerController.audioPlayer
-                      .seek(Duration(seconds: value.toInt()));
-                }
-              },
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold
+              ),
             ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            const SizedBox(height: 8),
+            Text(song.artist ?? "Unknown Artist",
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
+            ),
+
+            const Spacer(),
+            Container(
+              color: Colors.black45,
+              child: Column(
                 children: [
-                  Text(playerController.formatDuration(
-                      Duration(seconds: sliderPos))),
-                  Text(playerController.formatDuration(
-                      Duration(seconds: sliderMax))),
+                  Row(
+                    mainAxisAlignment:MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        onPressed: (){},
+                        icon: Icon(Icons.favorite_border,size: 32)
+                      )
+                    ],
+                  ),
+
+                  Slider(
+                    value: sliderPos.clamp(0, sliderMax).toDouble(),
+                    max: sliderMax > 0 ? sliderMax.toDouble() : 1,
+                    onChanged: (value) {
+                      if (isThisPlaying) {
+                        playerController.audioPlayer.seek(Duration(seconds: value.toInt()));
+                      }
+                    },
+                    activeColor: Colors.orange,
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(playerController.formatDuration(
+                            Duration(seconds: sliderPos))),
+                        Text(playerController.formatDuration(
+                            Duration(seconds: sliderMax))),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.skip_previous, size: 40),
+                        onPressed: playPrevious,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          (isThisPlaying && isPlaying)
+                              ? Icons.pause_circle_filled
+                              : Icons.play_circle_fill,
+                          size: 70,
+                        ),
+                        onPressed: playSelected,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.skip_next, size: 40),
+                        onPressed: playNext,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.skip_previous, size: 40),
-                  onPressed: playPrevious,
-                ),
-                IconButton(
-                  icon: Icon(
-                    (isThisPlaying && isPlaying)
-                        ? Icons.pause_circle_filled
-                        : Icons.play_circle_fill,
-                    size: 70,
-                  ),
-                  onPressed: playSelected,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next, size: 40),
-                  onPressed: playNext,
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
           ],
         );
       }),

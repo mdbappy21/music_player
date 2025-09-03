@@ -19,6 +19,7 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
 
   List<String> presets = ['Normal', 'Classical', 'Dance', 'Flat', 'Custom'];
   String selectedPreset = 'Normal';
+  List<String> presetsValue=['60','230','910','3600','14000'];
 
   @override
   void initState() {
@@ -134,7 +135,7 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
                       backgroundColor: selected ? Colors.orange : Colors.grey[800],
                     ),
                     onPressed: isEnabled ? () => _applyPreset(p) : null,
-                    child: Text(p),
+                    child: Text(p,style: TextStyle(color:selected? Colors.black:Colors.white70),),
                   ),
                 );
               }).toList(),
@@ -159,7 +160,7 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
                       inactiveColor: Colors.white24,
                     ),
                   ),
-                  Text("B${i + 1}", style: const TextStyle(color: Colors.white70)),
+                  Text(presetsValue[i], style: const TextStyle(color: Colors.white70)),
                 ],
               );
             }),

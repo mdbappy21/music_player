@@ -21,6 +21,9 @@ class PlayerController extends GetxController {
   final RxBool isPlaying = false.obs;
   final RxInt currentIndex = (-1).obs;
   final Rx<PlayMode> playMode = PlayMode.loopAll.obs;
+  final Rxn<String> currentPlaylistName = Rxn<String>();
+  final RxInt currentPlaylistIndex = (-1).obs;
+
 
   List<SongModel> allSongs = [];
   List<SongModel> currentPlaylist = [];
@@ -157,11 +160,14 @@ class PlayerController extends GetxController {
     }
   }
 
-  Future<void> playSong(SongModel song, List<SongModel> sourceList) async {
+  Future<void> playSong(SongModel song, List<SongModel> sourceList,
+      {String? playlistName, int? playlistIndex}) async {
     try {
       currentPlaylist = sourceList != allSongs ? sourceList : [];
-      final list = _activeList;
+      currentPlaylistName.value = playlistName;
+      if (playlistIndex != null) currentPlaylistIndex.value = playlistIndex;
 
+      final list = _activeList;
       final index = list.indexWhere((s) => s.id == song.id);
       if (index < 0) return;
 

@@ -27,37 +27,89 @@ class AllMusicScreen extends StatelessWidget {
             itemCount: songs.length,
             itemBuilder: (context, index) {
               final song = songs[index];
-              return GestureDetector(
-                onTap: () {
-                  Get.to(() => MusicDetailsScreen(song: song,songs: songs,));
-                },
-                child: Card(
-                  color: Colors.orange.shade200.withValues(alpha: 0.3),
-                  child: ListTile(
-                    leading: const Icon(Icons.music_note),
-                    title: Text(song.title),
-                    subtitle: Text(song.artist ?? "Unknown"),
-                    trailing: Obx(() {
-                      final isCurrent = playerController.currentSong.value?.id == song.id;
-                      final isPlaying = playerController.isPlaying.value;
-
-                      return IconButton(
-                        icon: Icon(
-                          isCurrent ? (isPlaying ? Icons.pause : Icons.play_arrow) : Icons.play_arrow,
-                        ),
-                        onPressed: () {
-                          if (isCurrent) {
-                            if (isPlaying) {
-                              playerController.pauseSong();
-                            } else {
-                              playerController.resumeSong();
-                            }
-                          } else {
-                            playerController.playSingle(song,songs);
-                          }
-                        },
-                      );
-                    }),
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: GestureDetector(
+                  onTap: () {
+                    Get.to(() => MusicDetailsScreen(song: song,songs: songs,));
+                  },
+                  child: Card(
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12),
+                      ),
+                    ),
+                    color: const Color.fromARGB(115, 108, 34, 23),
+                    child: SizedBox(
+                      height: 96,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 48,
+                            height: double.infinity,
+                            decoration: const BoxDecoration(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(12),
+                              ),
+                              gradient: LinearGradient(
+                                colors: [Colors.orange, Colors.deepOrange, Colors.orange],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: const Icon(Icons.music_note, color: Colors.black),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    song.title,
+                                    softWrap: true,
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    song.artist ?? "Unknown Artist",
+                                    softWrap: true,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(right: 18.0),
+                            child: Obx(() {
+                              final isCurrent = playerController.currentSong.value?.id == song.id;
+                              final isPlaying = playerController.isPlaying.value;
+                              return IconButton(
+                                icon: Icon(
+                                  isCurrent ? (isPlaying ? Icons.pause : Icons.play_arrow) : Icons.play_arrow,
+                                ),
+                                onPressed: () {
+                                  if (isCurrent) {
+                                    if (isPlaying) {
+                                      playerController.pauseSong();
+                                    } else {
+                                      playerController.resumeSong();
+                                    }
+                                  } else {
+                                    playerController.playSingle(song,songs);
+                                  }
+                                },
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
               );
@@ -65,11 +117,7 @@ class AllMusicScreen extends StatelessWidget {
           );
         },
       ),
-      bottomNavigationBar: Obx(() {
-        return playerController.currentSong.value == null
-            ? const SizedBox.shrink()
-            : const MiniPlayer();
-      }),
+      bottomNavigationBar: const MiniPlayer()
     );
   }
 }

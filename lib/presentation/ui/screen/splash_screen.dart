@@ -11,7 +11,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
@@ -21,8 +20,9 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey.shade400,
       body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16,horizontal: 24),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
         child: Center(
           child: Column(
             children: [
@@ -31,22 +31,28 @@ class _SplashScreenState extends State<SplashScreen> {
                 height: 220,
                 child: Image.asset('assets/images/musicLogo.png'),
               ),
-              const SizedBox(height: 16),
-              Text('Music Player',style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 18
-              ),),
+              const SizedBox(height: 48),
+              Text(
+                'Music Player',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
               Spacer(),
-              const CupertinoActivityIndicator(radius: 20,color: Colors.black,),
-              const SizedBox(height: 16),
-              Text('Version: 1.0.0'),
+              const CupertinoActivityIndicator(radius: 20, color: Colors.black),
+              const SizedBox(height: 24),
+              Text('Version: 1.0.0', style: TextStyle(color: Colors.black)),
+              const SizedBox(height: 8),
             ],
           ),
         ),
       ),
     );
   }
-  Future<void>_moveToNextScreen()async{
+
+  Future<void> _moveToNextScreen() async {
     await Future.delayed(Duration(seconds: 2));
     Get.offAll(() => HomeScreen());
   }

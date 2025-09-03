@@ -29,7 +29,7 @@ void showAddToPlaylistSheet(SongModel song) {
                 child: TextField(
                   controller: nameController,
                   decoration: const InputDecoration(
-                    hintText: 'New playlist name (press create)',
+                    hintText: 'New Playlist',
                     border: OutlineInputBorder(),
                   ),
                 ),

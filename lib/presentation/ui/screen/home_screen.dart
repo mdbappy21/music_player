@@ -8,14 +8,39 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Music Player"),
+          backgroundColor: Colors.black45,
+          title:Text('Music Player'),
+          centerTitle: true,
+          // Row(
+          //   children: [
+          //     Expanded(
+          //       child: TextButton(
+          //         onPressed: () {},
+          //         child: const Text(
+          //           'Music Player',
+          //           style: TextStyle(color: Colors.white),
+          //         ),
+          //       ),
+          //     ),
+          //     Expanded(
+          //       child: TextButton(
+          //         onPressed: () {},
+          //         child: const Text(
+          //           'Video Player',
+          //           style: TextStyle(color: Colors.white),
+          //         ),
+          //       ),
+          //     ),
+          //   ],
+          // ),
           bottom: const TabBar(
             tabs: [
               Tab(text: 'Songs'),
               Tab(text: 'Playlists'),
+              Tab(text: 'Download'),
             ],
           ),
         ),
@@ -23,8 +48,10 @@ class HomeScreen extends StatelessWidget {
           children: [
             AllMusicScreen(),
             PlaylistsScreen(),
+            Center(child: Text('Coming soon'))
           ],
         ),
+        drawer: Drawer(),
       ),
     );
   }

@@ -11,9 +11,20 @@ class MusicPlayerApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Music Player',
-      theme: ThemeData.dark(),
+      theme: _lightThemeData(),
+      darkTheme: _darkThemeData(),
+      themeMode: ThemeMode.dark,
       home: const SplashScreen(),
       initialBinding: ControllerBinder(),
     );
   }
+
+  ThemeData _lightThemeData() => ThemeData(
+
+  );
+
+  ThemeData _darkThemeData() => ThemeData(
+    brightness: Brightness.dark,
+    scaffoldBackgroundColor: Colors.grey.shade900,
+  );
 }

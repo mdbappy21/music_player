@@ -16,6 +16,14 @@ void showMiniPlayerActionsSheet(BuildContext context, SongModel song) {
       ),
       child: Wrap(
         children: [
+          TextButton(
+            onPressed: () {
+              Get.back();
+            },
+            child: Text('Cancel',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
           ListTile(
             leading: const Icon(Icons.equalizer),
             title: const Text('Equalizer'),
