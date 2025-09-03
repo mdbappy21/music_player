@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
@@ -13,6 +12,9 @@ enum PlayMode { shuffle, loopOne, loopAll, stop }
 
 class PlayerController extends GetxController {
   final AudioPlayer audioPlayer = AudioPlayer();
+  bool _stopArmed = false;
+  bool _stopTriggered = false;
+
   final Rx<Duration> position = Duration.zero.obs;
   final Rx<Duration> duration = Duration.zero.obs;
   final Rxn<SongModel> currentSong = Rxn<SongModel>();
@@ -22,61 +24,73 @@ class PlayerController extends GetxController {
 
   List<SongModel> allSongs = [];
   List<SongModel> currentPlaylist = [];
-
-  final Random _random = Random();
+  List<int> _lastSourceIds = [];
 
   bool get isPlaylistMode => currentPlaylist.isNotEmpty;
+  List<SongModel> get _activeList => isPlaylistMode ? currentPlaylist : allSongs;
 
   @override
   void onInit() {
     super.onInit();
     _initAudioSession();
 
-    audioPlayer.playerStateStream.listen((state) => isPlaying.value = state.playing);
-    audioPlayer.positionStream.listen((pos) => position.value = pos);
-    audioPlayer.durationStream.listen((dur) => duration.value = dur ?? Duration.zero);
+    audioPlayer.playerStateStream.listen((state) {
+      isPlaying.value = state.playing;
+    });
 
-    audioPlayer.processingStateStream.listen((state) {
-      if (state == ProcessingState.completed) _handleSongEnd();
+    audioPlayer.positionStream.listen((pos) {
+      position.value = pos;
+
+      if (_stopArmed) {
+        final d = audioPlayer.duration;
+        if (!_stopTriggered &&
+            d != null &&
+            pos >= d - const Duration(milliseconds: 200)) {
+          _stopTriggered = true;
+          audioPlayer.stop();
+        }
+      }
+    });
+
+    audioPlayer.currentIndexStream.listen((index) {
+      if (index != null) {
+        final list = _activeList;
+        if (index >= 0 && index < list.length) {
+          currentIndex.value = index;
+          currentSong.value = list[index];
+          _stopTriggered = false;
+        }
+      }
+    });
+
+    audioPlayer.durationStream.listen((dur) {
+      duration.value = dur ?? Duration.zero;
     });
 
     audioPlayer.androidAudioSessionIdStream.listen((sessionId) {
       if (sessionId != null) {
         try {
           EqualizerService.init(sessionId);
-        } catch (e) {
+        } catch (_) {
           EqualizerService.init(sessionId);
         }
       }
     });
-    audioPlayer.currentIndexStream.listen((index) {
-      if (index != null) {
-        final list = isPlaylistMode ? currentPlaylist : allSongs;
-        if (index >= 0 && index < list.length) {
-          currentIndex.value = index;
-          currentSong.value = list[index]; // 🔥 keep title/artist in sync
-        }
+
+    // ✅ Handle Stop mode reliably
+    audioPlayer.processingStateStream.listen((state) async {
+      if (playMode.value == PlayMode.stop &&
+          state == ProcessingState.completed) {
+        await audioPlayer.stop();
       }
     });
   }
 
-  /// Initialize Audio Session for Android/iOS
   Future<void> _initAudioSession() async {
     final session = await AudioSession.instance;
     await session.configure(const AudioSessionConfiguration.music());
   }
 
-  // Uri? _artUriForSong(SongModel song) {
-  //   try {
-  //     final albumId = (song as dynamic).albumId;
-  //     if (albumId == null || (albumId is int && albumId <= 0)) {
-  //       return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
-  //     }
-  //     return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
-  //   } catch (e) {
-  //     return Uri.parse('https://media.istockphoto.com/id/1175435360/vector/music-note-icon-vector-illustration.jpg?s=612x612&w=0&k=20&c=R7s6RR849L57bv_c7jMIFRW4H87-FjLB8sqZ08mN0OU=');
-  //   }
-  // }
   Future<Uri> _assetImageUri() async {
     final byteData = await rootBundle.load('assets/images/musicLogo.png');
     final file = File('${(await getTemporaryDirectory()).path}/musicLogo.png');
@@ -85,126 +99,155 @@ class PlayerController extends GetxController {
     }
     return Uri.file(file.path);
   }
+
   Future<Uri?> _artUriForSong(SongModel song) async {
     try {
       final albumId = (song as dynamic).albumId;
       if (albumId == null || (albumId is int && albumId <= 0)) {
-        return await _assetImageUri(); // fallback
+        return await _assetImageUri();
       }
-      // TODO: if you add real album art fetching later, return it here
       return await _assetImageUri();
-    } catch (e) {
+    } catch (_) {
       return await _assetImageUri();
     }
   }
 
+  Future<List<AudioSource>> _buildAudioSources(List<SongModel> list) async {
+    final List<AudioSource> sources = [];
+    for (final s in list) {
+      final artUri = await _artUriForSong(s);
+      sources.add(
+        AudioSource.uri(
+          Uri.parse(s.uri!),
+          tag: MediaItem(
+            id: s.id.toString(),
+            album: s.album ?? '',
+            title: s.title,
+            artist: s.artist ?? 'Unknown Artist',
+            artUri: artUri,
+            duration: Duration(milliseconds: s.duration ?? 0),
+          ),
+        ),
+      );
+    }
+    return sources;
+  }
 
+  bool _sameSourceAs(List<SongModel> list) {
+    if (_lastSourceIds.length != list.length) return false;
+    for (var i = 0; i < list.length; i++) {
+      if (_lastSourceIds[i] != list[i].id) return false;
+    }
+    return true;
+  }
 
-  /// Play a song from a list
+  Future<void> _setPlaylistSource(List<SongModel> list,
+      {int initialIndex = 0}) async {
+    final ids = list.map((e) => e.id).toList();
+    if (!_sameSourceAs(list)) {
+      final sources = await _buildAudioSources(list);
+      _lastSourceIds = ids;
+      await audioPlayer.setAudioSources(
+        sources,
+        initialIndex: initialIndex,
+        initialPosition: Duration.zero,
+      );
+    } else {
+      await audioPlayer.seek(Duration.zero, index: initialIndex);
+    }
+  }
+
   Future<void> playSong(SongModel song, List<SongModel> sourceList) async {
     try {
-      currentSong.value = song;
-      currentIndex.value = sourceList.indexOf(song);
-
       currentPlaylist = sourceList != allSongs ? sourceList : [];
+      final list = _activeList;
 
-      // Build MediaItems for all songs in the current list
-      final List<AudioSource> audioSources = [];
-      for (var s in sourceList) {
-        final artUri = await _artUriForSong(s);
-        audioSources.add(
-          AudioSource.uri(
-            Uri.parse(s.uri!),
-            tag: MediaItem(
-              id: s.id.toString(),
-              album: s.album ?? '',
-              title: s.title,
-              artist: s.artist ?? 'Unknown Artist',
-              artUri: artUri,
-              duration: Duration(milliseconds: s.duration ?? 0),
-            ),
-          ),
-        );
-      }
+      final index = list.indexWhere((s) => s.id == song.id);
+      if (index < 0) return;
 
+      currentSong.value = song;
+      currentIndex.value = index;
 
-      // Use ConcatenatingAudioSource for lock screen previous/next support
-      await audioPlayer.setAudioSource(
-        ConcatenatingAudioSource(children: audioSources),
-        initialIndex: currentIndex.value,
-      );
-
+      await _setPlaylistSource(list, initialIndex: index);
+      await _applyPlayMode();
       await audioPlayer.play();
     } catch (e) {
       await audioPlayer.play();
     }
   }
 
-
-  /// Play single song (alias)
   Future<void> playSingle(SongModel song, List<SongModel> songList) async {
     await playSong(song, songList);
   }
 
-  /// Pause playback
   void pauseSong() => audioPlayer.pause();
-
-  /// Resume playback
   void resumeSong() => audioPlayer.play();
 
-  /// Seek to position
-  Future<void> seek(Duration pos) async => audioPlayer.seek(pos);
-
-  /// Play next song
-  void playNext() {
-    final list = isPlaylistMode ? currentPlaylist : allSongs;
-    if (list.isEmpty) return;
-
-    int nextIndex = (currentIndex.value + 1) % list.length;
-    playSong(list[nextIndex], list);
+  Future<void> seek(Duration pos) async {
+    _stopTriggered = false;
+    await audioPlayer.seek(pos);
   }
 
-  /// Play previous song
-  void playPrevious() {
-    final list = isPlaylistMode ? currentPlaylist : allSongs;
-    if (list.isEmpty) return;
-
-    int prevIndex = (currentIndex.value - 1 + list.length) % list.length;
-    playSong(list[prevIndex], list);
+  Future<void> playNext() async {
+    if (playMode.value == PlayMode.stop) return;
+    if (audioPlayer.sequence.isNotEmpty) {
+      await audioPlayer.seekToNext();
+      await audioPlayer.play();
+    } else {
+      final list = _activeList;
+      if (list.isEmpty) return;
+      final nextIndex = (currentIndex.value + 1) % list.length;
+      await playSong(list[nextIndex], list);
+    }
   }
 
-  /// Play a random song (shuffle)
-  void _playRandomSong() {
-    final list = isPlaylistMode ? currentPlaylist : allSongs;
-    if (list.isEmpty) return;
-
-    int nextIndex = _random.nextInt(list.length);
-    playSong(list[nextIndex], list);
+  Future<void> playPrevious() async {
+    if (playMode.value == PlayMode.stop) return;
+    if (audioPlayer.sequence.isNotEmpty) {
+      await audioPlayer.seekToPrevious();
+      await audioPlayer.play();
+    } else {
+      final list = _activeList;
+      if (list.isEmpty) return;
+      final prevIndex = (currentIndex.value - 1 + list.length) % list.length;
+      await playSong(list[prevIndex], list);
+    }
   }
 
-  /// Handle end of song based on play mode
-  void _handleSongEnd() {
+  Future<void> _applyPlayMode() async {
     switch (playMode.value) {
       case PlayMode.shuffle:
-        _playRandomSong();
+        _stopArmed = false;
+        _stopTriggered = false;
+        await audioPlayer.setShuffleModeEnabled(true);
+        await audioPlayer.shuffle();
+        await audioPlayer.setLoopMode(LoopMode.all);
         break;
+
       case PlayMode.loopOne:
-      // replay same song
-        if (currentSong.value != null) {
-          playSong(currentSong.value!, isPlaylistMode ? currentPlaylist : allSongs);
-        }
+        _stopArmed = false;
+        _stopTriggered = false;
+        await audioPlayer.setShuffleModeEnabled(false);
+        await audioPlayer.setLoopMode(LoopMode.one);
         break;
+
       case PlayMode.loopAll:
-        playNext();
+        _stopArmed = false;
+        _stopTriggered = false;
+        await audioPlayer.setShuffleModeEnabled(false);
+        await audioPlayer.setLoopMode(LoopMode.all);
         break;
+
       case PlayMode.stop:
-        pauseSong();
+        _stopArmed = true;
+        _stopTriggered = false;
+        await audioPlayer.setShuffleModeEnabled(false);
+        await audioPlayer.setLoopMode(LoopMode.off);
         break;
     }
   }
 
-  /// Toggle play mode (shuffle -> loopOne -> stop -> loopAll)
-  void togglePlayMode() {
+  Future<void> togglePlayMode() async {
     switch (playMode.value) {
       case PlayMode.loopAll:
         playMode.value = PlayMode.shuffle;
@@ -219,9 +262,9 @@ class PlayerController extends GetxController {
         playMode.value = PlayMode.loopAll;
         break;
     }
+    await _applyPlayMode();
   }
 
-  /// Format duration for UI
   String formatDuration(Duration? d) {
     if (d == null) return "0:00";
     final minutes = d.inMinutes.toString();
@@ -229,6 +272,5 @@ class PlayerController extends GetxController {
     return '$minutes:$seconds';
   }
 
-  /// Check if a song is currently playing
   bool isPlayingSong(SongModel song) => currentSong.value?.id == song.id;
 }
