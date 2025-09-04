@@ -3,6 +3,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:music_player/data/models/playlist.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'app.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,7 +18,9 @@ Future<void> main() async {
     androidNotificationChannelName: 'Music Playback',
     androidNotificationOngoing: true,
   );
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MusicPlayerApp());
 }
 
