@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/presentation/controllers/library_controller.dart';
-import 'package:music_player/presentation/controllers/player_controller.dart';
+import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 import 'package:music_player/presentation/ui/widgets/mini_player.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'music_details_screen.dart';
@@ -12,7 +12,7 @@ class AllMusicScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final libraryController = Get.find<LibraryController>();
-    final playerController = Get.find<PlayerController>();
+    final UnifiedPlayerController playerController = Get.find<UnifiedPlayerController>();
 
     return Scaffold(
       body: FutureBuilder<List<SongModel>>(
@@ -101,7 +101,7 @@ class AllMusicScreen extends StatelessWidget {
                                       playerController.resumeSong();
                                     }
                                   } else {
-                                    playerController.playSingle(song,songs);
+                                    playerController.playSong(song,songs);
                                   }
                                 },
                               );

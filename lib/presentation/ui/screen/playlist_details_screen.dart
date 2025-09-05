@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/data/models/playlist.dart';
-import 'package:music_player/presentation/controllers/player_controller.dart';
+import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 import 'package:music_player/presentation/ui/widgets/mini_player.dart';
 import 'music_details_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -16,7 +16,7 @@ class PlaylistDetailsScreen extends StatefulWidget {
 }
 
 class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
-  final PlayerController playerController = Get.find<PlayerController>();
+  final UnifiedPlayerController playerController = Get.find<UnifiedPlayerController>();
   final OnAudioQuery _audioQuery = OnAudioQuery();
 
   List<SongModel> playlistSongs = [];
@@ -118,7 +118,7 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
                               if (isCurrent) {
                                 playerController.pauseSong();
                               } else {
-                                playerController.playSingle(song, playlistSongs);
+                                playerController.playSong(song, playlistSongs);
                                 playerController.currentSong.value = song;
                               }
                             },

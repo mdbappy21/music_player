@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_player/presentation/controllers/player_controller.dart';
+import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
 
 void showSongDetailsSheet(SongModel song) {
-  final playerController = Get.find<PlayerController>();
+  final UnifiedPlayerController playerController = Get.find<UnifiedPlayerController>();
 
   Get.bottomSheet(
     Container(

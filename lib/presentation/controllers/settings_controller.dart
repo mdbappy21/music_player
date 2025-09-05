@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:get/get.dart';
-import 'player_controller.dart';
+import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 
 class SettingsController extends GetxController {
   final RxInt sleepTimerSeconds = 0.obs;
@@ -21,7 +21,7 @@ class SettingsController extends GetxController {
         timer.cancel();
         sleepTimerSeconds.value = 0;
         try {
-          final player = Get.find<PlayerController>();
+          final player = Get.find<UnifiedPlayerController>();
           player.pauseSong();
         } catch (e) {
           sleepTimerSeconds.value = sleepTimerSeconds.value - 1;

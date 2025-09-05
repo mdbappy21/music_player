@@ -41,7 +41,7 @@ class HomeScreen extends StatelessWidget {
             tabs: [
               Tab(text: 'Songs'),
               Tab(text: 'Playlists'),
-              Tab(text: 'Download'),
+              Tab(text: 'Online'),
             ],
           ),
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:on_audio_query/on_audio_query.dart';
-import 'package:music_player/presentation/controllers/player_controller.dart';
+import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 
 class MusicDetailsScreen extends StatefulWidget {
   final SongModel song;
@@ -14,7 +14,7 @@ class MusicDetailsScreen extends StatefulWidget {
 }
 
 class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
-  final PlayerController playerController = Get.find<PlayerController>();
+  final UnifiedPlayerController playerController = Get.find<UnifiedPlayerController>();
 
   late Rx<SongModel> selectedSong;
 
@@ -27,7 +27,7 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
   void playSelected() {
     final current = playerController.currentSong.value;
     if (current == null || current.id != selectedSong.value.id) {
-      playerController.playSingle(selectedSong.value, widget.songs);
+      playerController.playSong(selectedSong.value, widget.songs);
     } else {
       if (playerController.isPlaying.value) {
         playerController.pauseSong();
@@ -41,7 +41,7 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
     final idx = widget.songs.indexWhere((s) => s.id == selectedSong.value.id);
     if (idx != -1 && idx < widget.songs.length - 1) {
       selectedSong.value = widget.songs[idx + 1];
-      playerController.playSingle(selectedSong.value, widget.songs);
+      playerController.playSong(selectedSong.value, widget.songs);
     }
   }
 
@@ -49,7 +49,7 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
     final idx = widget.songs.indexWhere((s) => s.id == selectedSong.value.id);
     if (idx > 0) {
       selectedSong.value = widget.songs[idx - 1];
-      playerController.playSingle(selectedSong.value, widget.songs);
+      playerController.playSong(selectedSong.value, widget.songs);
     }
   }
 

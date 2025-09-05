@@ -48,7 +48,7 @@ class OnlineMusicController extends GetxController {
 
       // Save last search in Hive as JSON string
       var box = await Hive.openBox('lastSearchBox');
-      await box.put('lastSearch', json.encode(videos.value));
+      await box.put('lastSearch', json.encode(videos));
     } else {
       Get.snackbar('Error', 'Failed to fetch videos');
     }

@@ -9,7 +9,7 @@ class EqualizerService {
     try {
       await _channel.invokeMethod('initEqualizer', {'sessionId': sessionId});
     } catch (e) {
-      print("Error initializing EQ: $e");
+      await _channel.invokeMethod('initEqualizer', {'sessionId': sessionId});
     }
   }
 
@@ -18,7 +18,7 @@ class EqualizerService {
     try {
       await _channel.invokeMethod('setEnabled', {'enabled': enabled});
     } catch (e) {
-      print("Error enabling EQ: $e");
+      await _channel.invokeMethod('setEnabled', {'enabled': enabled});
     }
     final box = await Hive.openBox('equalizer');
     box.put('enabled', enabled);
@@ -34,7 +34,7 @@ class EqualizerService {
     try {
       await _channel.invokeMethod('setBandLevel', {'band': band, 'level': level});
     } catch (e) {
-      print("Error setting band $band: $e");
+      await _channel.invokeMethod('setBandLevel', {'band': band, 'level': level});
     }
     final box = await Hive.openBox('equalizer');
     final levels = List<int>.from(box.get('levels', defaultValue: [0,0,0,0,0]));
@@ -81,7 +81,7 @@ class EqualizerService {
     try {
       await _channel.invokeMethod('setBassBoost', {'value': value});
     } catch (e) {
-      print("Error setting bass boost: $e");
+      await _channel.invokeMethod('setBassBoost', {'value': value});
     }
     final box = await Hive.openBox('equalizer');
     box.put('bass', value);

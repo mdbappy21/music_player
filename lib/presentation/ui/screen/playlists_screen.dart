@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:music_player/presentation/controllers/player_controller.dart';
 import 'package:music_player/presentation/controllers/playlist_controller.dart';
+import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'playlist_details_screen.dart';
 
@@ -13,7 +13,7 @@ class PlaylistsScreen extends StatefulWidget {
 }
 
 class _PlaylistsScreenState extends State<PlaylistsScreen> {
-  final PlayerController playerController = Get.find<PlayerController>();
+  final UnifiedPlayerController playerController = Get.find<UnifiedPlayerController>();
   final OnAudioQuery audioQuery = OnAudioQuery();
 
   @override
