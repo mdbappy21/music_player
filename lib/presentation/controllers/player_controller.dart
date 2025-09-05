@@ -4,6 +4,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:music_player/presentation/controllers/global_player_instance_controller.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_player/data/services/equalizer_service.dart';
 import 'package:path_provider/path_provider.dart';
@@ -11,7 +12,7 @@ import 'package:path_provider/path_provider.dart';
 enum PlayMode { shuffle, loopOne, loopAll, stop }
 
 class PlayerController extends GetxController {
-  final AudioPlayer audioPlayer = AudioPlayer();
+  final AudioPlayer audioPlayer = Get.find<GlobalPlayerController>().player;
   bool _stopArmed = false;
   bool _stopTriggered = false;
 

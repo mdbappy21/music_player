@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:music_player/presentation/ui/screen/all_music_screen.dart';
+import 'package:music_player/presentation/ui/screen/online_music_screen.dart';
 import 'package:music_player/presentation/ui/screen/playlists_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -44,11 +45,11 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            AllMusicScreen(),
-            PlaylistsScreen(),
-            Center(child: Text('Coming soon'))
+            const AllMusicScreen(),
+            const PlaylistsScreen(),
+            OnlineMusicScreen()
           ],
         ),
         drawer: Drawer(),
