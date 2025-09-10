@@ -40,7 +40,7 @@ class AllMusicScreen extends StatelessWidget {
                         bottomRight: Radius.circular(12),
                       ),
                     ),
-                    color: const Color.fromARGB(115, 108, 34, 23),
+                    color: const Color.fromARGB(81, 108, 68, 23),
                     child: SizedBox(
                       height: 96,
                       child: Row(
@@ -54,7 +54,12 @@ class AllMusicScreen extends StatelessWidget {
                                 topLeft: Radius.circular(12),
                               ),
                               gradient: LinearGradient(
-                                colors: [Colors.orange, Colors.deepOrange, Colors.orange],
+                                colors: [
+                                  Colors.red,
+                                  Colors.yellow,
+                                  // Colors.green,
+                                  // Colors.blue,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
