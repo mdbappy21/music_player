@@ -193,6 +193,12 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
   }
   void _onEditPlaylistName() {
     final playlistController = Get.find<PlaylistController>();
+
+    if (widget.playlist.id == "favorite") {
+      Get.snackbar("Error", "Favorite playlist cannot be renamed");
+      return;
+    }
+
     final TextEditingController nameController = TextEditingController(text: widget.playlist.name);
 
     Get.defaultDialog(
@@ -229,6 +235,7 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       ),
     );
   }
+
 
   void _onAddSongsToPlaylist() {
     Get.to(()=>HomeScreen());
