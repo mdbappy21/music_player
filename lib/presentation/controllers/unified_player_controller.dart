@@ -87,10 +87,11 @@ class UnifiedPlayerController extends GetxController {
     });
 
     // eq init
-    audioPlayer.androidAudioSessionIdStream.listen((sessionId) {
+    audioPlayer.androidAudioSessionIdStream.listen((sessionId) async {
       if (sessionId != null) {
         try {
           EqualizerService.init(sessionId);
+          await _restoreEqualizer();
         } catch (_) {
           EqualizerService.init(sessionId);
         }
@@ -103,6 +104,24 @@ class UnifiedPlayerController extends GetxController {
         await audioPlayer.stop();
       }
     });
+  }
+
+  Future<void> _restoreEqualizer() async {
+    final settings = await EqualizerService.loadSettings();
+
+    if (settings['enabled'] == true) {
+      await EqualizerService.setEnabled(true);
+
+      // Restore band levels
+      final levels = settings['levels'] as List<int>;
+      for (int i = 0; i < levels.length; i++) {
+        await EqualizerService.setBandLevel(i, levels[i]);
+      }
+
+      // Restore bass boost
+      final bass = await EqualizerService.getBassBoost();
+      await EqualizerService.setBassBoost(bass);
+    }
   }
 
   Future<void> _initAudioSession() async {

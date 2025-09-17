@@ -47,6 +47,7 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
               onTap: () {
                 Get.to(() => PlaylistDetailsScreen(playlist: playlist));
               },
+              onLongPress: () => _onDeletePlaylistDialog(playlistController, playlist.id, playlist.name),
             );
           },
         );
@@ -61,6 +62,40 @@ class _PlaylistsScreenState extends State<PlaylistsScreen> {
       ),
     );
   }
+  void _onDeletePlaylistDialog(PlaylistController playlistController, String playlistId, String playlistName,) {
+    if (playlistId == "favorite") {
+      Get.snackbar("Error", "Favorite playlist cannot be deleted");
+      return;
+    }
+
+    Get.defaultDialog(
+      backgroundColor: Colors.grey.shade800,
+      title: "Delete Playlist",
+      middleText: "Are you sure you want to delete \"$playlistName\"?",
+      confirm: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.red,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        onPressed: () {
+          playlistController.deletePlaylist(playlistId);
+          Get.back();
+          Get.snackbar("Deleted", "\"$playlistName\" removed");
+        },
+        child: const Text("Delete", style: TextStyle(color: Colors.white70)),
+      ),
+      cancel: OutlinedButton(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.grey[300], // text & border color
+          side: BorderSide(color: Colors.grey.shade500),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        ),
+        onPressed: () => Get.back(),
+        child: const Text("Cancel"),
+      ),
+    );
+  }
+
 
   Future<void> _onTapPlayButton(playlist, String playlistName, int index) async {
     final allSongs = await audioQuery.querySongs(

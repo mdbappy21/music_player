@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:music_player/presentation/controllers/playlist_controller.dart';
+import 'package:music_player/presentation/ui/sheets/equalizer_sheet.dart';
+import 'package:music_player/presentation/ui/sheets/mini_player_actions_sheet.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 import 'package:music_player/presentation/controllers/unified_player_controller.dart';
 
@@ -15,6 +18,7 @@ class MusicDetailsScreen extends StatefulWidget {
 
 class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
   final UnifiedPlayerController playerController = Get.find<UnifiedPlayerController>();
+  PlaylistController playlistController =Get.find<PlaylistController>();
 
   late Rx<SongModel> selectedSong;
 
@@ -59,6 +63,18 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
       appBar: AppBar(
         title: const Text("Music Player"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () {
+              // Only show actions sheet for local songs
+              if (playerController.currentSong.value != null) {
+                showMiniPlayerActionsSheet(
+                    context, playerController.currentSong.value!);
+              }
+            },
+          ),
+        ],
       ),
       body: Obx(() {
         final currentSong = playerController.currentSong.value;
@@ -100,16 +116,6 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
               color: Colors.black45,
               child: Column(
                 children: [
-                  Row(
-                    mainAxisAlignment:MainAxisAlignment.end,
-                    children: [
-                      IconButton(
-                        onPressed: (){},
-                        icon: Icon(Icons.favorite_border,size: 32)
-                      )
-                    ],
-                  ),
-
                   Slider(
                     value: sliderPos.clamp(0, sliderMax).toDouble(),
                     max: sliderMax > 0 ? sliderMax.toDouble() : 1,
@@ -139,6 +145,20 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       IconButton(
+                          onPressed: (){
+                            _onTapFavoriteButton();
+                          },
+                        icon: Obx(() {
+                          final isFavorite = playlistController
+                              .isInPlaylist('favorite', selectedSong.value.id); // check
+                          return Icon(
+                            isFavorite ? Icons.favorite : Icons.favorite_border,
+                            size: 32,
+                            // color: isFavorite ? Colors.red : Colors.white,
+                          );
+                        }),
+                      ),
+                      IconButton(
                         icon: const Icon(Icons.skip_previous, size: 40),
                         onPressed: playPrevious,
                       ),
@@ -155,6 +175,10 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
                         icon: const Icon(Icons.skip_next, size: 40),
                         onPressed: playNext,
                       ),
+                      IconButton(
+                        icon: const Icon(Icons.equalizer, color: Colors.white),
+                        onPressed: () => showEqualizerSheet(),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
@@ -166,4 +190,17 @@ class _MusicDetailsScreenState extends State<MusicDetailsScreen> {
       }),
     );
   }
+  void _onTapFavoriteButton() {
+    final songId = selectedSong.value.id;
+    final isFavorite = playlistController.isInPlaylist('favorite', songId);
+
+    if (isFavorite) {
+      playlistController.removeFromPlaylist('favorite', songId);
+      Get.snackbar('Playlist', 'Removed from "Favorite"');
+    } else {
+      playlistController.addToPlaylist('favorite', songId);
+      Get.snackbar('Playlist', 'Added to "Favorite"');
+    }
+  }
+
 }

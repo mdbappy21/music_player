@@ -33,7 +33,7 @@ void showSongDetailsSheet(SongModel song) {
           ),
           ListTile(
             title: const Text('URI / Path'),
-            subtitle: Text(song.uri ?? song.data, maxLines: 2, overflow: TextOverflow.ellipsis),
+            subtitle: Text(song.data ??song.uri ??'', maxLines: 2, overflow: TextOverflow.ellipsis),
           ),
           const SizedBox(height: 8),
         ],

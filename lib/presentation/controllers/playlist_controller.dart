@@ -42,4 +42,54 @@ class PlaylistController extends GetxController {
       _box.put(playlists[idx].id, playlists[idx]);
     }
   }
+
+  bool isInPlaylist(String playlistId, int trackId) {
+    final idx = playlists.indexWhere((p) => p.id == playlistId);
+    if (idx == -1) return false;
+    return playlists[idx].trackIds.contains(trackId);
+  }
+
+  void removeFromPlaylist(String playlistId, int trackId) {
+    final idx = playlists.indexWhere((p) => p.id == playlistId);
+    if (idx == -1) return;
+
+    if (playlists[idx].trackIds.contains(trackId)) {
+      playlists[idx].trackIds.remove(trackId);
+      playlists[idx] = Playlist(
+        id: playlists[idx].id,
+        name: playlists[idx].name,
+        trackIds: List.from(playlists[idx].trackIds),
+      );
+      playlists.refresh();
+      _box.put(playlists[idx].id, playlists[idx]);
+    }
+  }
+
+  void deletePlaylist(String playlistId) {
+    if (playlistId == 'favorite') return;
+
+    final idx = playlists.indexWhere((p) => p.id == playlistId);
+    if (idx == -1) return;
+
+    final pl = playlists[idx];
+    playlists.removeAt(idx);
+    _box.delete(pl.id);
+  }
+
+  void updatePlaylistName(String playlistId, String newName) {
+    final idx = playlists.indexWhere((p) => p.id == playlistId);
+    if (idx == -1) return;
+
+    final updatedPlaylist = Playlist(
+      id: playlists[idx].id,
+      name: newName,
+      trackIds: List.from(playlists[idx].trackIds),
+    );
+
+    playlists[idx] = updatedPlaylist;
+    playlists.refresh();
+
+    _box.put(updatedPlaylist.id, updatedPlaylist);
+  }
+
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:music_player/data/models/playlist.dart';
+import 'package:music_player/presentation/controllers/playlist_controller.dart';
 import 'package:music_player/presentation/controllers/unified_player_controller.dart';
+import 'package:music_player/presentation/ui/screen/home_screen.dart';
 import 'package:music_player/presentation/ui/widgets/mini_player.dart';
 import 'music_details_screen.dart';
 import 'package:on_audio_query/on_audio_query.dart';
@@ -46,8 +48,32 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       appBar: AppBar(
         title: Text(widget.playlist.name),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _onEditPlaylistName(),
+          ),
+        ],
       ),
-      body: playlistSongs.isEmpty ? const Center(child: Text("No songs in this playlist")) : ListView.builder(
+      body:  playlistSongs.isEmpty ? Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "No songs in this playlist",
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () {
+                _onAddSongsToPlaylist();
+              },
+              icon: const Icon(Icons.add),
+              label: const Text("Add Songs"),
+            ),
+          ],
+        ),
+      ) : ListView.builder(
         itemCount: playlistSongs.length,
         itemBuilder: (context, index) {
           final song = playlistSongs[index];
@@ -55,6 +81,33 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
           return GestureDetector(
             onTap: (){
               Get.to(()=>MusicDetailsScreen(song: song, songs: playlistSongs));
+            },
+            onLongPress: () {
+              Get.defaultDialog(
+                title: "Remove Song",
+                middleText: "Remove \"${song.title}\" from this playlist?",
+                confirm: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  onPressed: () {
+                    final playlistController = Get.find<PlaylistController>();
+                    playlistController.removeFromPlaylist(widget.playlist.id, song.id);
+                    fetchPlaylistSongs(); // refresh the list
+                    Get.back();
+                    Get.snackbar(
+                      "Removed",
+                      "\"${song.title}\" removed from ${widget.playlist.name}",
+                      snackPosition: SnackPosition.BOTTOM,
+                    );
+                  },
+                  child: const Text("Remove", style: TextStyle(color: Colors.white)),
+                ),
+                cancel: OutlinedButton(
+                  onPressed: () => Get.back(),
+                  child: const Text("Cancel"),
+                ),
+              );
             },
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 4),
@@ -137,5 +190,47 @@ class _PlaylistDetailsScreenState extends State<PlaylistDetailsScreen> {
       ),
       bottomNavigationBar: const MiniPlayer(),
     );
+  }
+  void _onEditPlaylistName() {
+    final playlistController = Get.find<PlaylistController>();
+    final TextEditingController nameController = TextEditingController(text: widget.playlist.name);
+
+    Get.defaultDialog(
+      title: "Edit Playlist Name",
+      content: TextField(
+        controller: nameController,
+        decoration: InputDecoration(
+          hintText: "Enter new name",
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      confirm: ElevatedButton(
+        style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
+        onPressed: () {
+          final newName = nameController.text.trim();
+          if (newName.isEmpty) {
+            Get.snackbar("Error", "Name cannot be empty");
+            return;
+          }
+
+          widget.playlist.name = newName;
+          playlistController.playlists.refresh();
+
+          playlistController.updatePlaylistName(widget.playlist.id, newName);
+          setState(() {});
+          Get.back();
+          Get.snackbar("Success", "Playlist renamed to \"$newName\"");
+        },
+        child: const Text("Save", style: TextStyle(color: Colors.white)),
+      ),
+      cancel: OutlinedButton(
+        onPressed: () => Get.back(),
+        child: const Text("Cancel"),
+      ),
+    );
+  }
+
+  void _onAddSongsToPlaylist() {
+    Get.to(()=>HomeScreen());
   }
 }
