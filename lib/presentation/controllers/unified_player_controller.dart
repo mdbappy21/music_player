@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
@@ -314,6 +315,7 @@ class UnifiedPlayerController extends GetxController {
   }
 
   // ---------- ONLINE ----------
+  final Map<String, String> _onlineAudioUrlCache = {};
   Future<void> playOnlineAudio(String videoId, String title, String thumbnail) async {
     // if switching from local → online, reset first
     if (activeSource.value == PlayerSource.local) {
@@ -324,12 +326,25 @@ class UnifiedPlayerController extends GetxController {
     activeSource.value = PlayerSource.online;
 
     try {
-      final manifest = await yt.videos.streamsClient.getManifest(videoId);
-      final audioStream = manifest.audioOnly.withHighestBitrate();
+      String audioUrl;
+
+      // Check cache first
+      if (_onlineAudioUrlCache.containsKey(videoId)) {
+        audioUrl = _onlineAudioUrlCache[videoId]!;
+      } else {
+        // fetch manifest with timeout
+        final manifest = await yt.videos.streamsClient.getManifest(videoId)
+            .timeout(const Duration(seconds: 12));
+        final audioStream = manifest.audioOnly.withHighestBitrate();
+        audioUrl = audioStream.url.toString();
+
+        // Cache it (beware: URLs may expire after some time; choose cache expiration policy if needed)
+        _onlineAudioUrlCache[videoId] = audioUrl;
+      }
 
       await audioPlayer.setAudioSource(
         AudioSource.uri(
-          Uri.parse(audioStream.url.toString()),
+          Uri.parse(audioUrl),
           tag: MediaItem(
             id: videoId,
             album: 'YouTube',
@@ -347,6 +362,8 @@ class UnifiedPlayerController extends GetxController {
       currentThumbnail.value = thumbnail;
 
       await audioPlayer.play();
+    } on TimeoutException {
+      Get.snackbar('Timeout', 'Failed to fetch audio stream (timeout). Try again.');
     } catch (e) {
       Get.snackbar('Error', e.toString());
     }

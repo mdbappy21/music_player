@@ -56,35 +56,69 @@ class OnlineMusicScreen extends StatelessWidget {
                 itemCount: controller.videos.length,
                 itemBuilder: (context, index) {
                   final video = controller.videos[index];
-                  final videoId = video['id']['videoId'];
-                  final title = video['snippet']['title'];
-                  final thumbnail = video['snippet']['thumbnails']['default']['url'];
+                  // Extract safely:
+                  String? videoId;
+                  String title = 'Unknown';
+                  String thumbnail = '';
 
-                  return ListTile(
-                    leading: Image.network(thumbnail),
-                    title: Text(title),
-                    trailing: Obx(() {
-                      final isThisPlaying = audioController.currentSong.value?.id == videoId &&
-                          audioController.isPlaying.value;
+                  try {
+                    final idObj = video['id'];
+                    if (idObj is Map && idObj['videoId'] != null) {
+                      videoId = idObj['videoId'].toString();
+                    } else if (idObj is String) {
+                      videoId = idObj;
+                    }
+                    final snippet = video['snippet'];
+                    if (snippet is Map) {
+                      title = snippet['title']?.toString() ?? title;
+                      thumbnail = (snippet['thumbnails'] is Map && snippet['thumbnails']['default'] is Map) ? snippet['thumbnails']['default']['url']?.toString() ?? '' : '';
+                    }
+                  } catch (_) {
+                    // ignore, will show minimal UI
+                  }
 
-                      return IconButton(
-                        icon: Icon(
-                          isThisPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                          color: Colors.orange,
-                        ),
-                        onPressed: () {
-                          if (isThisPlaying) {
-                            audioController.pauseSong();
-                          } else {
-                            audioController.playOnlineAudio(videoId, title, thumbnail);
-                          }
-                        },
-                      );
-                    }),
+                  if (videoId == null) {
+                    return const SizedBox.shrink(); // skip invalid entry
+                  }
+                  return Card(
+                    elevation: 2,
+                    color: Colors.black45,
+                    child: ListTile(
+                      leading: thumbnail.isNotEmpty ? Image.network(thumbnail) : const Icon(Icons.music_note),
+                      title: Text(title),
+                      subtitle: Obx(() {
+                        final d = controller.onlineDurations[videoId];
+                        if (d == null) return const Text("Live / Unknown");
+                        final minutes = d.inMinutes;
+                        final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+                        return Text("Duration: $minutes:$seconds");
+                      }),
 
-                    onTap: () {
-                      Get.to(() => YoutubePlayerPage(videoId: videoId));
-                    },
+                      trailing: Obx(() {
+                        final isPlayingNow = audioController.activeSource.value ==
+                            PlayerSource.online &&
+                            audioController.currentTitle.value == title &&
+                            audioController.isPlaying.value;
+
+                        return IconButton(
+                          icon: Icon(
+                              isPlayingNow ? Icons.pause_circle_filled : Icons
+                                  .play_circle_fill,
+                              color: Colors.orange),
+                          onPressed: () {
+                            if (isPlayingNow) {
+                              audioController.pauseOnline();
+                            } else {
+                              audioController.playOnlineAudio(
+                                  videoId!, title, thumbnail);
+                            }
+                          },
+                        );
+                      }),
+                      onTap: () {
+                        Get.to(() => YoutubePlayerPage(videoId: videoId!));
+                      },
+                    ),
                   );
                 },
               );
