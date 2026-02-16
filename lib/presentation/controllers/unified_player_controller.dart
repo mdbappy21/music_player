@@ -334,7 +334,7 @@ class UnifiedPlayerController extends GetxController {
       } else {
         // fetch manifest with timeout
         final manifest = await yt.videos.streamsClient.getManifest(videoId)
-            .timeout(const Duration(seconds: 12));
+            .timeout(const Duration(seconds: 60));
         final audioStream = manifest.audioOnly.withHighestBitrate();
         audioUrl = audioStream.url.toString();
 
